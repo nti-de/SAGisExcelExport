@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:element name="SAGisExcelExportDefinition" type="SAGisExcelExportDefinitionType" />
+  
+	<xs:complexType name="SAGisExcelExportDefinitionType">
+		<xs:sequence>
+			<xs:element name="SAGisExcelExportItem" type="SAGisExcelExportItemType" minOccurs="0" maxOccurs="1" />
+		</xs:sequence>
+	</xs:complexType>
+  
+	<xs:complexType name="SAGisExcelExportItemType">
+		<xs:sequence>
+			<xs:element name="FeatureClass" type="String255TypeNotEmpty" minOccurs="1" maxOccurs="1" />
+			<xs:element name="Title" type="String255TypeNotEmpty" minOccurs="1" maxOccurs="1" />
+			<xs:element name="FileName" type="String255TypeNotEmpty" minOccurs="0" maxOccurs="1" />
+			<xs:element name="ProviderTypeRestrictions" minOccurs="0" maxOccurs="1">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element type="xs:string" name="Type" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			<xs:element type="xs:string" name="ProjectId" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="WorkSheet" type="SAGisWorksheetType" minOccurs="1" maxOccurs="unbounded" />
+		</xs:sequence>
+		<!--
+		<xs:attribute name="Type" default="Individual">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="Individual"/>
+					<xs:enumeration value="Statistic"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+		-->
+	</xs:complexType>
+
+	<xs:complexType name="SAGisWorksheetType">
+		<xs:all>
+			<xs:element name="AccessRight" type="String255TypeEmpty" minOccurs="1" maxOccurs="1" />
+			<xs:element name="TabColor" type="String255TypeEmpty" minOccurs="1" maxOccurs="1" />
+			<xs:element name="WorkSheetName" type="String255TypeEmpty" minOccurs="1" maxOccurs="1" />
+			<!--<xs:element name="FeatureSourceIdentifier" type="String255TypeEmpty" minOccurs="0" maxOccurs="1" />-->
+			<xs:element name="ColumnHeaderAliases" minOccurs="0" maxOccurs="1">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element name="Alias" minOccurs="0" maxOccurs="unbounded">
+							<xs:complexType>
+								<xs:simpleContent>
+									<xs:extension base="xs:string">
+										<xs:attribute type="xs:string" name="ColumnName" use="required"/>
+										<xs:attribute type="xs:string" name="Title" use="optional"/>
+									</xs:extension>
+								</xs:simpleContent>
+							</xs:complexType>
+						</xs:element>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+			
+			<xs:element name="ProviderTypeRestrictions" minOccurs="0" maxOccurs="1">
+				<xs:complexType>
+					<xs:sequence>
+						<xs:element type="xs:string" name="Type" minOccurs="0" maxOccurs="unbounded"/>
+					</xs:sequence>
+				</xs:complexType>
+			</xs:element>
+
+			<xs:element name="Sql" type="String255LongText" minOccurs="1" maxOccurs="1" />
+			<xs:element name="WithoutSelection" type="xs:boolean" minOccurs="0" maxOccurs="1" default="false" />
+			<xs:element name="Active" type="xs:boolean" minOccurs="0" maxOccurs="1" default="true" />
+			<xs:element name="OrderBy" type="String255LongText" minOccurs="0" maxOccurs="1" />
+		</xs:all>
+	</xs:complexType>
+
+	<xs:simpleType name="String255TypeNotEmpty">
+		<xs:restriction base="xs:string">
+			<xs:minLength value ="1"/>
+			<xs:maxLength value = "255"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="String255TypeEmpty">
+		<xs:restriction base="xs:string">
+			<xs:minLength value ="0"/>
+			<xs:maxLength value = "255"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="String255LongText">
+		<xs:restriction base="xs:string">
+			<xs:minLength value ="1"/>
+			<xs:maxLength value = "65536"/>
+		</xs:restriction>
+	</xs:simpleType>
+ </xs:schema>

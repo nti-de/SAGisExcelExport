@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<SAGisExcelExportDefinition xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xsi:noNamespaceSchemaLocation="SAGisExcelExportDefinition.xsd">
+	<SAGisExcelExportItem>
+		<FeatureClass>AX_FLURSTUECK</FeatureClass>
+		<Title>ALKIS Flurstücke</Title>
+		<ProviderTypeRestrictions>
+			<Type>OSGeo.SQLite</Type>
+		</ProviderTypeRestrictions>
+		<WorkSheet>
+			<AccessRight>AX_FLURSTUECK</AccessRight>
+			<TabColor>red</TabColor>
+			<WorkSheetName>Flurstücke</WorkSheetName>
+			
+			<Sql><![CDATA[
+				SELECT a.ID, a.FID, a.GEMEINDEZUGEHOERIGKEIT, a.ZEITPUNKTDERENTSTEHUNG, a.GEMARKUNG, 
+					a.AMTLICHEFLAECHE, a.FLURNUMMER, a.FLURSTUECKSNUMMER_ZAEHLER, a.FLURSTUECKSNUMMER_NENNER, 
+					a.FLURSTUECKSKENNZEICHEN, a.AREA, a.FLURSTUECKSFOLGE, a.ZUSTAENDIGESTELLE, a.ANLASS1, a.ANLASS2, 
+					a.RECHTSBEHELFSVERFAHREN, 
+					CASE WHEN a.RECHTSBEHELFSVERFAHREN = '0' THEN 'Nein' WHEN a.RECHTSBEHELFSVERFAHREN = '1' THEN 'Ja'  ELSE 'Keine Angabe' END as XRECHTSBEHELFSVERFAHREN,
+					a.ABWEICHENDERRECHTSZUSTAND, 
+					CASE WHEN a.ABWEICHENDERRECHTSZUSTAND = '0' THEN 'Nein' WHEN a.ABWEICHENDERRECHTSZUSTAND = '1' THEN 'Ja'  ELSE 'Keine Angabe' END as XABWEICHENDERRECHTSZUSTAND,
+					a.ZWEIFELHAFTERFLURSTUECKSNA, 
+					CASE WHEN a.ZWEIFELHAFTERFLURSTUECKSNA = '0' THEN 'Nein' WHEN a.ZWEIFELHAFTERFLURSTUECKSNA = '1' THEN 'Ja'  ELSE 'Keine Angabe' END as XZWEIFELHAFTERFLURSTUECKSNA,
+					b.GEMEINDEKENNZEICHEN, b.BEZEICHNUNG as GEMEINDEBEZEICHNUNG, 
+					c.SCHLUESSEL as GEMARKUNGSCHLUESSEL, c.BEZEICHNUNG as GEMARKUNGBEZEICHNUNG, 
+					d.BEZEICHNUNG as ZUSTAENDIGESTELLEBEZ 
+				FROM AX_FLURSTUECK a 
+					LEFT OUTER JOIN AX_GEMEINDE b ON ( b.GEMEINDEKENNZEICHEN = a.GEMEINDEZUGEHOERIGKEIT and b.LZE IS NULL ) 
+					LEFT OUTER JOIN AX_GEMARKUNG c ON ( c.SCHLUESSEL = a.GEMARKUNG  and c.LZE IS NULL) 
+					LEFT OUTER JOIN AX_DIENSTSTELLE d ON ( d.SCHLUESSEL = a.ZUSTAENDIGESTELLE  and d.LZE IS NULL) 
+				WHERE a.FID = {0}
+			]]></Sql>
+		</WorkSheet>
+
+		<WorkSheet>
+			<AccessRight>AX_PERSON</AccessRight>
+			<TabColor>green</TabColor>
+			<WorkSheetName>Eigentümer</WorkSheetName>
+			<Sql><![CDATA[
+				SELECT 
+					fs.FID, 
+					fs.AREA, 
+					fs.AMTLICHEFLAECHE, 
+					fs.GEMARKUNG,
+					fs.FLURSTUECKSNUMMER_ZAEHLER, 
+					fs.FLURSTUECKSNUMMER_NENNER,
+					fs.FLURNUMMER,
+					fs.FLURSTUECKSFOLGE, 
+					fs.FLURSTUECKSKENNZEICHEN, 
+					fs.GEMEINDEZUGEHOERIGKEIT,
+					
+					--fs.ID,
+					--me.PEID, 
+					c.VALUE as ANREDE, 
+					pe.NACHNAMEODERFIRMA,
+					pe.VORNAME,
+					
+					AX_ANSCHRIFT.QA_ORGANISATION,
+					AX_ANSCHRIFT.BESTIMMUNGSLAND, 
+					AX_ANSCHRIFT.POSTLEITZAHLPOSTZUSTELLUNG, 
+					AX_ANSCHRIFT.ORT_POST, 
+					AX_ANSCHRIFT.ORTSTEIL, 
+					AX_ANSCHRIFT.STRASSE, 
+					AX_ANSCHRIFT.HAUSNUMMER,
+					
+					b.VALUE as EIGENTUEMERART_VALUE, 
+					d.VALUE as BUCHUNGSART_VALUE
+					
+					--me.LAUFENDENUMMERNACHDIN1421, 
+					--me.ANTEIL_ZAEHLER, 
+					--me.ANTEIL_NENNER, 
+					--me.ARTDERRECHTSGEMEINSCHAFT, 
+					--me.EIGENTUEMERART,
+					--pe.AKADEMISCHERGRAD, 
+					--pe.BERUF, 
+					--pe.GEBURTSNAME, 
+					--pe.NAMENSBESTANDTEIL, 
+					--pe.GEBURTSDATUM, 
+					--pe.WOHNORTODERSITZ, 
+					--pe.HAUSHALTSSTELLELANDESGRUND, 
+					--pe.SONSTIGEEIGENSCHAFTEN, 
+					
+					--e.BUCHUNGSBLATTKENNZEICHEN, 
+					--e.BUCHUNGSBLATTBEZIRK, 
+					--e.BUCHUNGSBLATTNUMMERMITBUCH, 
+					--f.SCHLUESSELGESAMT as BB_BEZIRK_KEY, 
+					--f.BEZEICHNUNG AS BB_BEZIRK_VALUE, 
+					--bs.ANTEIL_ZAEHLER as BS_ANTEIL_ZAEHLER, 
+					--bs.ANTEIL_NENNER as BS_ANTEIL_NENNER 
+				FROM ME_FS_PE me
+					left outer JOIN AX_FLURSTUECK fs on fs.ID = me.FSID AND fs.LZE is null
+					inner JOIN AX_PERSON pe on pe.ID = me.PEID AND pe.LZE is null
+					LEFT OUTER JOIN AX_EIGENTUEMERART_TBD b ON ( b.SHORT_VALUE = me.EIGENTUEMERART ) 
+					LEFT OUTER JOIN AX_ANREDE_PERSON_TBD c ON ( c.SHORT_VALUE = pe.ANREDE ) 
+					LEFT OUTER JOIN AX_BUCHUNGSART_TBD d ON ( d.SHORT_VALUE = me.I_BUART ) 
+					LEFT OUTER JOIN AX_BUCHUNGSBLATT e ON ( e.ID = me.BBID ) 
+					LEFT OUTER JOIN AX_BUCHUNGSBLATTBEZIRK f ON ( f.SCHLUESSEL = e.BUCHUNGSBLATTBEZIRK ) 
+					LEFT OUTER JOIN ME_BZ me ON (me.TABELLE = 'AX_Flurstueck' AND me.LZE is null AND me.ART = 'istGebucht' AND me.ID = me.FSID) 
+					INNER JOIN AX_BUCHUNGSSTELLE bs ON me.ZID = bs.ID AND bs.LZE IS NULL 
+					
+					LEFT JOIN ME_PE_AS ON ME_PE_AS.PEID = me.PEID
+					LEFT JOIN AX_ANSCHRIFT ON AX_ANSCHRIFT.ID = ME_PE_AS.ASID AND AX_ANSCHRIFT.LZE is null
+				WHERE fs.FID = {0} AND me.DIREKT = 1
+				ORDER BY e.BUCHUNGSBLATTKENNZEICHEN ASC , LAUFENDENUMMERNACHDIN1421
+			]]></Sql>
+		</WorkSheet>
+
+		<WorkSheet>
+			<AccessRight></AccessRight>
+			<TabColor>yellow</TabColor>
+			<WorkSheetName>Nutzungsarten</WorkSheetName>
+			<ProviderTypeRestrictions>
+			<Type>OSGeo.SQLite</Type>
+		</ProviderTypeRestrictions>
+			<Sql><![CDATA[
+                SELECT 
+                    AX_FLURSTUECK.FLURSTUECKSKENNZEICHEN, a.NUTZ_ID, a.ID, a.FID, a.AREA AS X_AREA_INTERSECTION, 
+					((AX_FLURSTUECK.AMTLICHEFLAECHE * a.FLAECHEANTEIL)/100) as TFL_AMTLICH,
+                    a.FLAECHEANTEIL, 
+                    AX_FLURSTUECK.AREA AS X_AREA_SOURCE, AX_FLURSTUECK.AMTLICHEFLAECHE,
+                    b.VALUE AS X_SUBTYPE_VALUE, c.VALUE AS ART_TABELLE_TEXT 
+                FROM AX_FLURSTUECK 
+                    LEFT JOIN EX_FSTNUTZUNG a ON ( a.FST_ID = AX_FLURSTUECK.ID ) 
+                    LEFT JOIN EX_NUTZUNG_EX_TBD b ON ( b.SHORT_VALUE = a.EIG1 ) 
+                    LEFT JOIN EX_NUTZUNGART_TBD c ON ( c.SHORT_VALUE = a.ART_TABELLE ) 
+                WHERE AX_FLURSTUECK.FID = {0} 
+                ORDER BY a.AREA desc
+			]]></Sql>
+		</WorkSheet>
+
+		<WorkSheet>
+			<AccessRight></AccessRight>
+			<TabColor>blue</TabColor>
+			<WorkSheetName>Alle Elemente</WorkSheetName>
+			<WithoutSelection>true</WithoutSelection>
+			<Active>false</Active>
+			<ProviderTypeRestrictions>
+			<Type>OSGeo.SQLite</Type>
+		</ProviderTypeRestrictions>
+			<Sql><![CDATA[
+				SELECT 
+					t1.FID, t1.AMTLICHEFLAECHE, t1.GEMARKUNG, 
+					t1.FLURSTUECKSNUMMER_ZAEHLER, t1.FLURSTUECKSNUMMER_NENNER, t1.FLURNUMMER, 
+					t1.FLURSTUECKSFOLGE, t1.FLURSTUECKSKENNZEICHEN, t1.GEMEINDEZUGEHOERIGKEIT
+				FROM AX_FLURSTUECK t1
+			]]></Sql>
+		</WorkSheet>
+	</SAGisExcelExportItem>
+</SAGisExcelExportDefinition>

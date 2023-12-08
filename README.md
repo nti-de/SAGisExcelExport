@@ -33,7 +33,7 @@ Für eine erfolgreiche Ausführung des Programms müssen zudem folgende Python-K
 2. Im Verzeichnis befindet sich die _OSGeo4W-Shell_ (Datei mit dem Namen `OSGeo4W.bat`). Starten Sie die _OSGeo4W-Shell_ und führen Sie den folgenden Befehl im sich öffnenden Programm aus:
 
   ```sh
-  o4w_env & python3 -m pip install xlsxwriter xsdata
+  o4w_env & python3 -m pip install openpyxl pandas xlsxwriter xsdata
   ```
 </details>
 
@@ -43,7 +43,7 @@ Für eine erfolgreiche Ausführung des Programms müssen zudem folgende Python-K
 ---
 
 <sup>
-Copyright (C) 2023 NTI Deutschland GmbH
+Copyright © 2023 NTI Deutschland GmbH
 </sup></br>
 <sup>
 This program is free software: you can redistribute it and/or modify

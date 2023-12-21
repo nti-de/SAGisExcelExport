@@ -38,8 +38,8 @@ Für eine erfolgreiche Ausführung des Programms müssen zudem folgende Python-K
 </details>
 
 ### Kontakt
-- Mail: qgis-de@nti.biz
-- Web: https://nti.biz/de
+- Mail: qgis-de@nti-group.com
+- Web: https://www.nti-group.com/de
 ---
 
 <sup>

@@ -6,9 +6,9 @@
 name=SAGis Excel Export
 qgisMinimumVersion=3.28.12
 description=Plugin öffnet einen vereinfachten Excel-Export-Dialog
-version=1.0.0
+version=1.0.1
 author=NTI Deutschland GmbH
-email=qgis-de@nti.biz
+email=qgis-de@nti-group.com
 
 about=DE: SAGis Excel Export bietet einen einfachen Dialog zum Exportieren von XLSX-Dateien. Attributfelder können basierend auf der Konfiguration des Attributformulars in den Layer-Eigenschaften ausgewählt werden.
 
@@ -33,7 +33,7 @@ hasProcessingProvider=no
 # Tags are comma separated with spaces allowed
 tags=python, excel, export
 
-homepage=http://www.nti.biz/de/
+homepage=https://www.nti-group.com/de
 category=Plugins
 icon=resources/SAGis_Logo_Excel_Export.png
 # experimental flag

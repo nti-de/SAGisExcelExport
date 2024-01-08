@@ -39,31 +39,31 @@ class ExcelTemplateExportDialog(QDialog):
         self.setWindowTitle("SAGis Excel Export")
 
         # Reports
-        self.label_reports = QLabel("Exportvorlage")
+        self.label_reports = QLabel(self.tr("Export template"))
         self.label_reports.setFixedHeight(13)
         self.combo_box_reports = QComboBox()
 
         # Columns
         self.two_list_selection = TwoListSelection(
             left_list=sorted(self.column_names, key=str.casefold),
-            left_caption="Alle Felder:",
-            right_caption="Exportierte Felder:",
+            left_caption=self.tr("Fields:"),
+            right_caption=self.tr("Fields to export:"),
             clone=True,
             allow_filtering=True
         )
         self.two_list_selection.right_list_changed.connect(self.populate_sort_order)
 
         # Sort order
-        self.label_sort_order = QLabel("Sortierreihenfolge")
+        self.label_sort_order = QLabel(self.tr("Sorting order"))
         self.label_sort_order.setFixedHeight(13)
         self.combo_box_sort_order = QComboBox()
         self.populate_sort_order(self.two_list_selection.get_right_dict())
 
         # Current or all
-        self.radio_button_current = QRadioButton(f"Für ausgewählte Objekte ({self.layer.selectedFeatureCount()})")
-        self.radio_button_all = QRadioButton(f"Für alle Objekte ({self.layer.featureCount()})")
-        self.button_create = QPushButton("Erstellen")
-        self.button_close = QPushButton("Schließen")
+        self.radio_button_current = QRadioButton(self.tr("Only selected features ({})").format(self.layer.selectedFeatureCount()))
+        self.radio_button_all = QRadioButton(self.tr("All features ({})").format(self.layer.featureCount()))
+        self.button_create = QPushButton(self.tr("Export"))
+        self.button_close = QPushButton(self.tr("Close"))
 
         self.button_group = QButtonGroup()
         self.button_group.addButton(self.radio_button_current)
@@ -119,7 +119,7 @@ class ExcelTemplateExportDialog(QDialog):
             directory = os.path.join(pathlib.Path(__file__).parent.parent, pathlib.Path(self.CONFIG_PATH).__str__(), "*.xml")
             file_list = glob.glob(directory)
         except Exception as e:
-            loggerutils.log_error(f"Fehler beim Lesen der Konfigurationsdateien:\n{str(e)}")
+            loggerutils.log_error(self.tr("Error reading configuration files:\n{}").format(str(e)))
             return False
 
         # Custom configs, only works if the project file exists
@@ -130,7 +130,7 @@ class ExcelTemplateExportDialog(QDialog):
                 custom_list = glob.glob(directory)
                 file_list.extend(custom_list)
         except Exception as e:
-            loggerutils.log_error(f"Fehler beim Lesen der Konfigurationsdateien:\n{str(e)}")
+            loggerutils.log_error(self.tr("Error reading configuration files:\n{}").format(str(e)))
             return False
 
         # Parse configs
@@ -149,7 +149,7 @@ class ExcelTemplateExportDialog(QDialog):
 
                     self.configs.append(config)
             except Exception as e:
-                loggerutils.log_error(f"Fehler beim Lesen der Konfigurationsdateien:\n{str(e)}")
+                loggerutils.log_error(self.tr("Error reading configuration file\n'{}':\n{}").format(file, str(e)))
                 return False
 
         return True
@@ -164,7 +164,7 @@ class ExcelTemplateExportDialog(QDialog):
             self.combo_box_reports.addItem("_" * 50)
             item: QStandardItem = self.combo_box_reports.model().item(report_count)
             item.setFlags(item.flags() & ~Qt.ItemIsSelectable)
-        self.combo_box_reports.addItem("Datenexport - Gesamter Datensatz", -1)
+        self.combo_box_reports.addItem(self.tr("Data export - Entire data set"), -1)
 
     def populate_sort_order(self, items: dict):
         self.combo_box_sort_order.clear()
@@ -194,7 +194,7 @@ class ExcelTemplateExportDialog(QDialog):
         else:
             # Check if there are features to be exported.
             if self.export_feature_count() == 0:
-                iface.messageBar().pushInfo("SAGis Excel Export", "Keine zu exportierenden Objekte")
+                iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No features to export"))
                 return
 
             config = self.combo_box_reports.currentData()
@@ -209,9 +209,9 @@ class ExcelTemplateExportDialog(QDialog):
         default_path = QgsProject.instance().absolutePath() or os.getcwd()
         self.file_path = QFileDialog.getSaveFileName(
             self,
-            "Speichern unter",
+            self.tr("Save as"),
             os.path.join(default_path, default_name),
-            "Excel-Arbeitsmappe (*.xlsx)"
+            self.tr("MS Office Open XML spreadsheet [XLSX] (*.xlsx *.XLSX)")
         )[0]
 
     def create_export_with_config(self, config: SagisExcelExportDefinition):
@@ -228,7 +228,7 @@ class ExcelTemplateExportDialog(QDialog):
         ids = [f.attribute(self.primary_key_name) for f in features]
 
         if not ids:
-            iface.messageBar().pushInfo("SAGis Excel Export", "Keine zu exportierenden Objekte-IDs")
+            iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No feature ids to export"))
             return
 
         context = ExcelExportContext(
@@ -244,7 +244,7 @@ class ExcelTemplateExportDialog(QDialog):
         self.task.taskTerminated.connect(self.task_completed)
         QgsApplication.taskManager().addTask(self.task)
 
-        self.button_create.setText("Abbrechen")
+        self.button_create.setText(self.tr("Abort"))
         self.button_close.setDisabled(True)
 
     def create_generic_export(self):
@@ -258,7 +258,7 @@ class ExcelTemplateExportDialog(QDialog):
 
         worksheet = SagisWorksheetType(
             tab_color="blue",
-            work_sheet_name=f"Arbeitsblatt Export",
+            work_sheet_name=self.tr("Worksheet Export"),
             sql=sql,
             order_by=order_column if order_column else None
         )
@@ -274,16 +274,19 @@ class ExcelTemplateExportDialog(QDialog):
     def task_completed(self):
         if self.task.status() == QgsTask.TaskStatus.Complete:
             iface.messageBar().pushMessage(
-                title="Excel Export erfolgreich",
+                title=self.tr("Excel Export successful"),
                 text=f"<a href='{QUrl.fromLocalFile(str(pathlib.Path(self.file_path).parent)).toString()}'>{QDir.toNativeSeparators(self.file_path)}</a>",
                 level=Qgis.MessageLevel.Success,
                 duration=0
             )
         elif self.task.error:
-            loggerutils.log_error(f"Export fehlgeschlagen:\n{str(self.task.error)}", title="Exportfehler")
+            loggerutils.log_error(
+                self.tr("Export failed:\n{}").format(str(self.task.error)),
+                title=self.tr("Export error")
+            )
 
         self.task = None
-        self.button_create.setText("Erstellen")
+        self.button_create.setText(self.tr("Export"))
         self.button_close.setEnabled(True)
 
     def export_feature_count(self) -> int:

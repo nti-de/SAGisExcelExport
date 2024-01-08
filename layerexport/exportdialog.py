@@ -33,26 +33,26 @@ class ExportDialog(QDialog):
         self.__two_list_selection = TwoListSelection(
             left_list=self.__item_list,
             right_key_list=selected_fields,
-            left_caption="Alle Felder:",
-            right_caption="Exportierte Felder:",
+            left_caption=self.tr("Fields:"),
+            right_caption=self.tr("Fields to export:"),
             clone=True,
             allow_filtering=True
         )
         self.__two_list_selection.filter_by_key = False
 
-        self.__button_export = QPushButton("Export")
+        self.__button_export = QPushButton(self.tr("Export"))
         self.__button_export.setDisabled(self.__two_list_selection.right_list_widget.count() == 0)
         self.__two_list_selection.right_count_changed.connect(
             lambda count: self.__button_export.setDisabled(count == 0)
         )
 
-        self.__button_abort = QPushButton("Abbrechen")
+        self.__button_abort = QPushButton(self.tr("Abort"))
         self.__button_abort.setDisabled(True)
         self.__button_abort.clicked.connect(self.abort)
 
         # Radio buttons
-        self.__radio_selected = QRadioButton(f"Ausgewählte Objekte ({self.layer.selectedFeatureCount()})")
-        self.__radio_all = QRadioButton(f"Alle Objekte ({self.layer.featureCount()})")
+        self.__radio_selected = QRadioButton(self.tr("Only selected features ({})").format(self.layer.selectedFeatureCount()))
+        self.__radio_all = QRadioButton(self.tr("All features ({})").format(self.layer.featureCount()))
 
         # Disable __radio_selected if no features are selected.
         if self.layer.selectedFeatureCount() > 0:
@@ -62,8 +62,8 @@ class ExportDialog(QDialog):
             self.__radio_selected.setEnabled(False)
             self.__radio_all.setChecked(True)
 
-        self.__radio_translated = QRadioButton("Formular")
-        self.__radio_raw = QRadioButton("Datenbank")
+        self.__radio_translated = QRadioButton(self.tr("Use displayed values"))
+        self.__radio_raw = QRadioButton(self.tr("Use raw field values"))
         self.__radio_translated.setChecked(True)
 
         # Group radio buttons
@@ -85,13 +85,13 @@ class ExportDialog(QDialog):
 
         # region Menu bar
         self.__menu_bar = QMenuBar()
-        self.__advanced_menu = self.__menu_bar.addMenu("&Erweiterte Einstellungen")
+        self.__advanced_menu = self.__menu_bar.addMenu(self.tr("&Advanced Settings"))
 
         # Checkable settings
-        self.__prefer_alias_action = self.__advanced_menu.addAction("&Alias bevorzugen")
-        self.__show_index_action = self.__advanced_menu.addAction("&Index anzeigen")
-        self.__enable_filters_action = self.__advanced_menu.addAction("&Filter aktivieren")
-        self.__freeze_row_action = self.__advanced_menu.addAction("&Spaltenüberschriften fixieren")
+        self.__prefer_alias_action = self.__advanced_menu.addAction(self.tr("Use &alias"))
+        self.__show_index_action = self.__advanced_menu.addAction(self.tr("Show &index"))
+        self.__enable_filters_action = self.__advanced_menu.addAction(self.tr("Enable &filters"))
+        self.__freeze_row_action = self.__advanced_menu.addAction(self.tr("Freeze &column headers"))
 
         self.__prefer_alias_action.setCheckable(True)
         self.__show_index_action.setCheckable(True)
@@ -102,11 +102,11 @@ class ExportDialog(QDialog):
         self.__freeze_columns_action_widget = QWidgetAction(self.__advanced_menu)
         self.__freeze_columns_frame = QFrame()
         self.__freeze_columns_frame_layout = QHBoxLayout()
-        self.__freeze_columns_label = QLabel("Linke Spalten fixieren:")
+        self.__freeze_columns_label = QLabel(self.tr("Freeze left columns:"))
         self.__freeze_columns_max_label = QLabel("(max. 5)")
         self.__freeze_columns_widget = QSpinBox()
         self.__freeze_columns_widget.setMaximum(5)
-        self.__freeze_columns_widget.setSpecialValueText("Keine")
+        self.__freeze_columns_widget.setSpecialValueText(self.tr("None"))
         self.__freeze_columns_frame_layout.addWidget(self.__freeze_columns_label, 0, Qt.AlignLeft)
         self.__freeze_columns_frame_layout.addWidget(self.__freeze_columns_widget, 1, Qt.AlignLeft)
         self.__freeze_columns_frame_layout.addWidget(self.__freeze_columns_max_label, 2, Qt.AlignLeft)
@@ -116,7 +116,7 @@ class ExportDialog(QDialog):
 
         # Reset advanced settings
         self.__advanced_menu.addSeparator()
-        self.__reset_settings_action = self.__advanced_menu.addAction("Erweiterte Einstellungen &zurücksetzen")
+        self.__reset_settings_action = self.__advanced_menu.addAction(self.tr("&Reset advanced settings"))
         self.__reset_settings_action.triggered.connect(self.reset_advanced_settings)
         # endregion
 
@@ -163,14 +163,19 @@ class ExportDialog(QDialog):
 
         # Check if there are features to be exported.
         if self.export_feature_count(only_selected) == 0:
-            iface.messageBar().pushInfo("SAGis Excel Export", "Keine zu exportierenden Objekte")
+            iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No features to export"))
             return
 
         default_path = QgsProject.instance().absolutePath()
         layer_name = re.sub(r'[\/:*?"<>|]', "_", self.layer.name())
-        default_name = f"/{QDateTime.currentDateTime().date().toString('yyyy-MM-dd')}_{layer_name}"
-        self.file_name = QFileDialog.getSaveFileName(self, 'Speichern unter', default_path + default_name,
-                                                     'Excel-Arbeitsmappe (*.xlsx)')[0]
+        default_name = f"{QDateTime.currentDateTime().date().toString('yyyy-MM-dd')}_{layer_name}"
+
+        self.file_name = QFileDialog.getSaveFileName(
+            self,
+            self.tr("Save as"),
+            os.path.join(default_path, default_name),
+            self.tr("MS Office Open XML spreadsheet [XLSX] (*.xlsx *.XLSX)")
+        )[0]
 
         if not self.file_name:
             return
@@ -199,10 +204,10 @@ class ExportDialog(QDialog):
     def on_task_completed(self):
         if self.format_file():
             iface.messageBar().pushMessage(
-                f"Excel Export erfolgreich",
-                f"<a href='{QUrl.fromLocalFile(str(pathlib.Path(self.file_name).parent)).toString()}'>{QDir.toNativeSeparators(self.file_name)}</a>",
-                Qgis.MessageLevel.Success,
-                0
+                title=self.tr("Excel Export successful"),
+                text=f"<a href='{QUrl.fromLocalFile(str(pathlib.Path(self.file_name).parent)).toString()}'>{QDir.toNativeSeparators(self.file_name)}</a>",
+                level=Qgis.MessageLevel.Success,
+                duration=0
             )
             self.close()
         else:
@@ -223,15 +228,15 @@ class ExportDialog(QDialog):
             )
             return True
         except Exception as e:
-            title = "Excel Export Formatierung fehlgeschlagen"
-            message = f"Unformatierte/fehlerhafte Datei"
+            title = self.tr("Excel Export formatting failed")
+            message = self.tr("Unformatted/faulty file")
             file_path = f"<a href='{QUrl.fromLocalFile(str(pathlib.Path(self.file_name).parent)).toString()}'>{QDir.toNativeSeparators(self.file_name)}</a>"
 
             iface.messageBar().pushMessage(title, f"{str(e)}; {message} {file_path}", Qgis.MessageLevel.Warning, 0)
 
             loggerutils.log_error(
                 f"{title}:\n{str(e)}\n\n{message}:\n{QDir.toNativeSeparators(self.file_name)}",
-                title="Exportfehler"
+                title=self.tr("Export error")
             )
             return False
 

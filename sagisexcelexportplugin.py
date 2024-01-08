@@ -1,5 +1,6 @@
 import os.path
 
+from PyQt5.QtCore import QSettings, QTranslator, QCoreApplication
 from PyQt5.QtWidgets import QMenu, QToolButton
 
 from . import PLUGIN_NAME
@@ -23,6 +24,19 @@ class SagisExcelExportPlugin(SagisPluginBase):
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
 
+        # initialize locale
+        locale = QSettings().value("locale/userLocale")[0:2]
+        locale_path = os.path.join(
+            self.plugin_dir,
+            "i18n",
+            f"SagisExcelExportPlugin_{locale}.qm"
+        )
+
+        if os.path.exists(locale_path):
+            self.translator = QTranslator()
+            self.translator.load(locale_path)
+            QCoreApplication.instance().installTranslator(self.translator)
+
         super().__init__(
             iface,
             PLUGIN_NAME,
@@ -33,6 +47,19 @@ class SagisExcelExportPlugin(SagisPluginBase):
         self.sagis_icon = os.path.abspath(os.path.join(self.plugin_dir, "resources/SAGis_Logo_Excel_Export.png"))
         self.tool_button = None
         self.popup_menu = None
+
+    # noinspection PyMethodMayBeStatic
+    def tr(self, message: str) -> str:
+        """Get the translation for a string using Qt translation API.
+
+        :param message: String for translation.
+        :type message: str, QString
+
+        :returns: Translated version of message.
+        :rtype: QString
+        """
+
+        return QCoreApplication.translate("SagisExcelExportPlugin", message)
 
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
@@ -46,7 +73,7 @@ class SagisExcelExportPlugin(SagisPluginBase):
         )
 
         export_with_template_action = self.add_action(
-            text="Export mit Vorlage (PostgreSQL)...",
+            text=self.tr("Export with template (PostgreSQL)..."),
             callback=self.export_with_template,
             add_to_toolbar=False,
             parent=self.iface.mainWindow()
@@ -68,7 +95,7 @@ class SagisExcelExportPlugin(SagisPluginBase):
         """Run method that performs all the real work"""
 
         if not self.iface.activeLayer():
-            self.iface.messageBar().pushInfo("SAGis Excel Export", "Kein Layer ausgewählt")
+            self.iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No layer selected"))
             return
 
         dlg = ExportDialog()
@@ -81,23 +108,23 @@ class SagisExcelExportPlugin(SagisPluginBase):
 
         layer = self.iface.activeLayer()
         if not layer:
-            self.iface.messageBar().pushInfo("SAGis Excel Export", "Kein Layer ausgewählt")
+            self.iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No layer selected"))
             return
 
         class_name = layer.dataProvider().uri().table()
         if not class_name:
-            self.iface.messageBar().pushInfo("SAGis Excel Export", f"Keine Tabelle für Layer '{layer.name()} angegeben'")
+            self.iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No table set for layer '{}'").format(layer.name()))
             return
 
         pk_attributes = layer.primaryKeyAttributes()
         if not pk_attributes:
-            self.iface.messageBar().pushInfo("SAGis Excel Export", f"Kein Primärschlüssel für Layer '{layer.name()}'")
+            self.iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No primary key for layer '{}'").format(layer.name()))
             return
         pk_name = layer.fields().field(pk_attributes[0]).name()
 
         datasource = datasourcefactory.create_datasource_from_data_provider(layer.dataProvider())
         if not datasource or not datasource.connection_success:
-            self.iface.messageBar().pushInfo("SAGis Excel Export", "Es konnte keine Datenquelle konfiguriert werden")
+            self.iface.messageBar().pushInfo("SAGis Excel Export", self.tr("No data source could be configured"))
             return
 
         dlg = ExcelTemplateExportDialog(

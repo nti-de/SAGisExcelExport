@@ -67,18 +67,18 @@ class TwoListSelection(QWidget):
         self.right_list_widget.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
         self.__button_all_to_right = QPushButton(">>")
-        self.__button_all_to_right.setToolTip("Alle nach rechts")
+        self.__button_all_to_right.setToolTip(self.tr("Move all to the right"))
         self.__button_selected_to_right = QPushButton(">")
-        self.__button_selected_to_right.setToolTip("Auswahl nach rechts")
+        self.__button_selected_to_right.setToolTip(self.tr("Move selected to the right"))
         self.__button_selected_to_left = QPushButton("<")
-        self.__button_selected_to_left.setToolTip("Auswahl nach links")
+        self.__button_selected_to_left.setToolTip(self.tr("Move selected to the left"))
         self.__button_all_to_left = QPushButton("<<")
-        self.__button_all_to_left.setToolTip("Alle nach links")
+        self.__button_all_to_left.setToolTip(self.tr("Move all to the left"))
 
-        self.__button_up = QPushButton("Hoch")
-        self.__button_up.setToolTip("Auswahl nach oben bewegen")
-        self.__button_down = QPushButton("Runter")
-        self.__button_down.setToolTip("Auswahl nach unten bewegen")
+        self.__button_up = QPushButton(self.tr("Up"))
+        self.__button_up.setToolTip(self.tr("Move selection up"))
+        self.__button_down = QPushButton(self.tr("Down"))
+        self.__button_down.setToolTip(self.tr("Move selection down"))
 
         # Font size
         font = self.__left_caption.font()

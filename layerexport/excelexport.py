@@ -1,7 +1,7 @@
 import pathlib
 import re
 
-from PyQt5.QtCore import QUrl, QDir
+from PyQt5.QtCore import QUrl, QDir, QCoreApplication
 from qgis.core import Qgis, QgsTask, QgsApplication, QgsVectorFileWriter, QgsVectorFileWriterTask, QgsVectorLayer
 from qgis.utils import iface
 
@@ -39,13 +39,19 @@ def export(file_name: str, layer: QgsVectorLayer = None, field_ids=list[int], on
 
 def on_failure(error, error_message, file_name):
     if error == QgsVectorFileWriter.Canceled:
+        text = QCoreApplication.translate("SagisExcelExportPlugin", "Data partially exported to")
+        text += f" <a href='{QUrl.fromLocalFile(str(pathlib.Path(file_name).parent)).toString()}'>{QDir.toNativeSeparators(file_name)}</a>"
+
         iface.messageBar().pushMessage(
-            "Export abgebrochen",
-            f"Daten teilweise exportiert nach <a href='{QUrl.fromLocalFile(str(pathlib.Path(file_name).parent)).toString()}'>{QDir.toNativeSeparators(file_name)}</a>",
-            Qgis.MessageLevel.Info,
-            0
+            title=QCoreApplication.translate("SagisExcelExportPlugin", "Export canceled"),
+            text=text,
+            level=Qgis.MessageLevel.Info,
+            duration=0
         )
         return
 
     # Not canceled by the user.
-    loggerutils.log_error(f"Export fehlgeschlagen:\n{error_message}", title="Exportfehler")
+    loggerutils.log_error(
+        QCoreApplication.translate("SagisExcelExportPlugin", "Export failed") + f":\n{error_message}",
+        title=QCoreApplication.translate("SagisExcelExportPlugin", "Export error")
+    )

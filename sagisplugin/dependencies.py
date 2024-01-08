@@ -17,9 +17,9 @@ def check(required_packages: list[str], path_to_bundled_packages="") -> list[str
 
     missing_packages = []
     for package in required_packages:
-        if package in sys.modules:
+        if package in sys.modules or package.lower() in sys.modules:
             continue
-        elif importlib.util.find_spec(package):
+        elif importlib.util.find_spec(package) or importlib.util.find_spec(package.lower()):
             continue
         elif path_to_bundled_packages:
             # Add plugin folder to PATH to use included packages if present (plugin folder).
@@ -27,6 +27,9 @@ def check(required_packages: list[str], path_to_bundled_packages="") -> list[str
             if os.path.isdir(package_path):
                 sys.path.append(path_to_bundled_packages)
                 if importlib.util.find_spec(package):
+                    continue
+                # Try lowercase
+                if importlib.util.find_spec(package.lower()):
                     continue
 
         missing_packages.append(package)
@@ -56,11 +59,22 @@ def check_packages(required_packages: list[str], plugin_name="", plugin_path="")
     if not missing_packages:
         return True
 
-    message = f"Die folgenden Softwarekomponenten werden zur Ausführung {f'von {plugin_name} ' if plugin_name else ''}benötigt:\n\n"
-    message += "\n".join(missing_packages)
-    message += "\n\nSollen die fehlenden Komponenten installiert werden?"
+    message = "The following software components are required"
 
-    dialog = QMessageBox(QMessageBox.Question, 'Fehlende Abhängigkeiten', message, QMessageBox.Yes | QMessageBox.No)
+    if plugin_name:
+        message += " for {}".format(plugin_name)
+
+    message += ":\n\n"
+    message += "\n".join(missing_packages)
+    message += "\n\n"
+    message += "Do you want to install the missing components?"
+
+    dialog = QMessageBox(
+        QMessageBox.Question,
+        "Missing Dependencies",
+        message,
+        QMessageBox.Yes | QMessageBox.No
+    )
     reply = dialog.exec()
 
     if reply == QMessageBox.No:
@@ -70,20 +84,24 @@ def check_packages(required_packages: list[str], plugin_name="", plugin_path="")
     log = []
     for package in missing_packages:
         success = install(package)
-        if not success:
+        if success:
+            log.append(f"{package} ... " + "Installed")
+        else:
             error = True
-            log.append(f'{package} ... Fehler bei Installation')
+            log.append(f"{package} ... " + "Installation error")
 
     if error:
         iface.messageBar().pushMessage(
             plugin_name,
-            f'Fehler beim Installieren der Python-Pakete', '\n'.join(log),
+             "Error installing Python packages",
+            "\n".join(log),
             level=Qgis.MessageLevel.Critical
         )
     else:
         iface.messageBar().pushMessage(
             plugin_name,
-            f'Python-Pakete erfolgreich installiert', '\n'.join(log),
+            "Python packages successfully installed",
+            "\n".join(log),
             level=Qgis.MessageLevel.Success
         )
         return True

@@ -1,7 +1,7 @@
 import os
 
 PLUGIN_NAME = "SAGis Excel Export"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 DEPENDENCIES = [
     "pandas",
     "openpyxl",

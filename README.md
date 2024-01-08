@@ -7,13 +7,13 @@ SAGis Excel Export ist eine Erweiterung für die GIS-Software QGIS zum Exportier
 - Einfacher Export-Dialog mit Auswahl von Attributfeldern
   - Auswählbare Attributfelder basierend auf der Konfiguration des Attributformulars in den Layer-Eigenschaften (verstecke Elemente werden ignoriert, verwendung von Aliase)
   - Einige erweiterte Einstellung zur Formatierung der XLSX-Datei
-- Export-Dialog für den Export aus einer PostgreSQL-Datenbank anhand von vordefinierten XML-Vorlagen (/resources/config/Export/SAGisExcelExportDefinition.xsd)
+- Export-Dialog für den Export aus einer PostgreSQL-Datenbank anhand von vordefinierten XML-Vorlagen ([XSD](resources/config/Export/SAGisExcelExportDefinition.xsd))
 
 ## Nutzung
 
 ### Software-Voraussetzungen
 
-- QGIS >= 3.28.12
+- QGIS >= 3.28
 - PostgreSQL (nur für Export mit Vorlage) >= 12 mit PostGIS 3.1
 
 ### Installation
@@ -44,7 +44,7 @@ Für eine erfolgreiche Ausführung des Programms müssen zudem folgende Python-K
 
 <sup>
 Copyright © 2023 NTI Deutschland GmbH
-</sup></br>
+</sup><br>
 <sup>
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

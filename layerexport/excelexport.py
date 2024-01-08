@@ -37,15 +37,6 @@ def export(file_name: str, layer: QgsVectorLayer = None, field_ids=list[int], on
     return task
 
 
-def on_success(file_name=None):
-    iface.messageBar().pushMessage(
-        f"Excel Export erfolgreich",
-        f"<a href='{QUrl.fromLocalFile(str(pathlib.Path(file_name).parent)).toString()}'>{QDir.toNativeSeparators(file_name)}</a>",
-        Qgis.MessageLevel.Success,
-        0
-    )
-
-
 def on_failure(error, error_message, file_name):
     if error == QgsVectorFileWriter.Canceled:
         iface.messageBar().pushMessage(

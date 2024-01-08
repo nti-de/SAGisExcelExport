@@ -22,7 +22,7 @@ def create_uri(database_path: str) -> QgsDataSourceUri:
 
 def get_column_names(database: QSqlDatabase, table_name: str, type_="", force_lower=False) -> Tuple[list[str], str]:
     # result = []
-    # Ignore geoemtry columns for SQLite
+    # Ignore geometry columns for SQLite
     where = " WHERE type != 'FDO_GEOMETRY_as_blob'"
     where = f"{where} AND type = '{type_}'" if type_ else where
     sql = f"SELECT name FROM pragma_table_info('{table_name}'){where}"

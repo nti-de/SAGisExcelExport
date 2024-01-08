@@ -1,6 +1,5 @@
 from typing import Optional
 
-from qgis._core import QgsVectorDataProvider
 from qgis.core import QgsDataProvider
 
 from .datasource import DataSource

@@ -4,7 +4,7 @@
 
 [general]
 name=SAGis Excel Export
-qgisMinimumVersion=3.28.12
+qgisMinimumVersion=3.28
 description=Plugin öffnet einen vereinfachten Excel-Export-Dialog
 version=1.0.1
 author=NTI Deutschland GmbH
